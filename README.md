@@ -1,223 +1,215 @@
-# ana-podologia-auditoria
+# Podología Ana Ramírez
 
-Sistema de Gestión Clínica - Podología Ana Ramírez (v2.0).
+Sistema web para la gestión de pacientes, expedientes clínicos y citas de un
+consultorio podológico. Centraliza los antecedentes de salud, las atenciones y
+la valoración biomecánica, con acceso por perfiles y registro de cambios.
 
-Sistema integral para gestión de expedientes clínicos podológicos, antecedentes de salud, valoración biomecánica, citas, control de acceso por roles (RBAC estricto) y auditoría inmutable de cambios.
+## Funcionalidades
 
-## Conexión a MySQL externo
+### Pacientes y expedientes
 
-La copia de trabajo está configurada mediante el archivo privado `.env`. Docker
-inyecta `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` y `DB_CHARSET` en PHP.
-La ejecución nativa con `php -S` también lee ese archivo. Las credenciales no se
-incluyen en Git ni en las imágenes Docker.
+- Registro de identificación, contacto, domicilio, ocupación y contacto de emergencia.
+- Antecedentes de diabetes, hipertensión, problemas circulatorios, tratamientos,
+  alergias y otras condiciones de salud.
+- Información sobre calzado, uso de plantillas y actividad física.
+- Directorio con búsqueda por documento, nombre, apellido o teléfono.
+- Consulta del expediente, corrección de datos secundarios e impresión de la ficha.
+- Retirada de expedientes mediante borrado lógico, conservando sus registros.
 
-Para preparar **otra base vacía**, complete esas variables y las cuatro claves
-`DEMO_*_PASSWORD` (mínimo 12 caracteres) en `.env`, y ejecute:
+### Atenciones clínicas
+
+Cada atención se vincula con un paciente y un profesional responsable. Permite
+registrar motivo de consulta, diagnóstico, procedimiento, evolución de la lesión,
+recomendaciones, notas internas y fecha sugerida para la siguiente revisión.
+
+La valoración incluye escala de dolor, tipo de pisada, marcha y apoyo, exploración
+de piel y uñas, valoración vascular y exploración neurológica. Las atenciones
+aparecen en el expediente del paciente. Las correcciones y retiradas realizadas
+por administración conservan un historial de cambios.
+
+### Agenda de citas
+
+La agenda permite consultar los turnos de una fecha, reservar y editar citas,
+asignar profesionales y registrar el motivo y las notas de cada visita. Comprueba
+que las reservas de un mismo profesional no se superpongan.
+
+Los estados disponibles son **pendiente**, **en atención**, **finalizado** y
+**cancelado**. La cancelación conserva el registro de la reserva.
+
+### Personal y accesos
+
+La administración puede crear cuentas, actualizar datos del personal, asignar
+perfiles, renovar contraseñas y desactivar accesos. Las cuentas creadas desde
+este módulo deben cambiar su contraseña inicial al ingresar. La desactivación
+impide nuevos ingresos y bloquea el acceso en las sesiones abiertas.
+
+## Perfiles de usuario
+
+| Perfil | Funciones principales |
+| --- | --- |
+| SuperAdmin | Gestión de pacientes, atenciones, agenda y cuentas de todos los perfiles; acceso al panel técnico, información de tablas y registros del sistema. |
+| Administración | Corrección y retirada de expedientes y atenciones, gestión de agenda y administración de cuentas de especialistas y recepción. |
+| Especialista | Registro de pacientes y atenciones; consulta de expedientes y actualización del estado de sus propias citas. |
+| Recepción | Registro y consulta de pacientes, reserva y edición de citas y actualización de sus estados. |
+
+El ingreso se realiza con **DNI y contraseña**. Los permisos se comprueban en el
+servidor según el perfil de la cuenta.
+
+## Registro de cambios
+
+El sistema conserva la autoría y las fechas de creación de pacientes, citas y
+atenciones. Las modificaciones de pacientes registran el campo afectado, su valor
+anterior, el nuevo valor, el usuario y el motivo del cambio.
+
+Los cambios de citas, atenciones y cuentas del personal se almacenan en una
+auditoría adicional. Los ingresos, operaciones y acciones denegadas se registran
+en el historial del sistema, consultable desde el panel técnico.
+
+## Tecnologías
+
+- PHP 8.4 y PDO MySQL.
+- MySQL o MariaDB para la persistencia de información.
+- Apache en el entorno Docker.
+- Plantillas PHP, Tailwind CSS y Font Awesome.
+- Docker Compose para ejecutar los servicios y administrar los volúmenes.
+
+Los estilos y los iconos se cargan desde CDN y requieren conexión a Internet en
+el navegador.
+
+## Instalación con Docker
+
+Requisitos: Docker Engine y Docker Compose.
+
+1. Clone el repositorio y entre en su directorio.
+2. Cree el archivo de configuración:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Complete las contraseñas y revise los parámetros de conexión de `.env`.
+4. Inicie los servicios:
+
+   ```bash
+   docker compose up -d --build --wait
+   ```
+
+La aplicación estará disponible en **http://localhost:8088**. El puerto se puede
+cambiar con `APP_PORT`.
+
+La configuración de ejemplo utiliza MariaDB dentro de Docker. En el primer
+arranque se crea el esquema en el volumen nuevo y se aprovisionan las cuentas
+iniciales de los cuatro perfiles. Sus contraseñas se definen en las variables
+`DEMO_SUPERADMIN_PASSWORD`, `DEMO_ADMIN_PASSWORD`,
+`DEMO_ESPECIALISTA_PASSWORD` y `DEMO_RECEPCIONISTA_PASSWORD`, con un mínimo de
+12 caracteres. El aprovisionamiento conserva las cuentas existentes al reiniciar.
+
+### Variables de configuración
+
+| Variable | Descripción |
+| --- | --- |
+| `APP_PORT` | Puerto HTTP publicado en el equipo. Valor predeterminado: `8088`. |
+| `DB_HOST` | Servidor de la base de datos. En Docker local: `db`. |
+| `DB_PORT` | Puerto MySQL. Valor predeterminado: `3306`. |
+| `DB_NAME` | Nombre de la base de datos. |
+| `DB_USER` | Usuario utilizado por la aplicación. |
+| `DB_PASS` | Contraseña de conexión; en Docker, si está vacía, se utiliza `DB_PASSWORD`. |
+| `DB_CHARSET` | Juego de caracteres. Valor predeterminado: `utf8mb4`. |
+| `DB_PASSWORD` | Contraseña del usuario de la instancia MariaDB local. |
+| `DB_ROOT_PASSWORD` | Contraseña de administración de la instancia MariaDB local. |
+| `DEMO_*_PASSWORD` | Contraseñas de aprovisionamiento inicial de los cuatro perfiles. |
+
+El archivo `.env` contiene la configuración privada y está excluido del
+repositorio. Docker proporciona las variables a PHP sin incluir ese archivo en
+la imagen.
+
+### Conexión a un servidor MySQL externo
+
+Configure `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASS` en `.env` con los
+datos del servidor. La base debe existir y estar vacía antes de inicializarla.
+Para crear las tablas en la base seleccionada:
 
 ```bash
-docker compose build web
-docker compose run --rm --no-deps demo-init php docker/inicializar.php
-docker compose up -d --wait
+mysql -h SERVIDOR -P PUERTO -u USUARIO -p NOMBRE_BASE < sql/instalar.sql
 ```
 
-El instalador crea ocho tablas, cuatro cuentas y datos sintéticos: 36 pacientes,
-72 atenciones y 72 citas, con auditorías. Rechaza bases que ya contienen tablas.
-La carga ficticia no se repite si ya existe su marca de inicialización.
-`sql/instalar.sql` utiliza la base seleccionada y no contiene instrucciones DROP;
-`sql/schema.sql` se reserva para recrear bases locales desechables.
+Después, ejecute `docker compose up -d --build --wait`. PHP utilizará el servidor
+indicado por `DB_HOST`; el servicio MariaDB local se mantiene como dependencia
+del entorno Compose.
 
-La web sigue disponible en **http://localhost:8088**. `docker compose up` conserva
-el servicio MariaDB local como dependencia, aunque PHP utiliza el servidor
-indicado por `DB_HOST`; cambiar entre servidores requiere recrear el contenedor
-web. Las tablas y los datos del servidor remoto son independientes del volumen
-MariaDB local.
+`sql/instalar.sql` crea las tablas y los roles sin instrucciones de borrado.
+`sql/schema.sql` elimina y vuelve a crear las tablas de la base local
+`podoana_db`; se utiliza únicamente para reinicializar entornos de desarrollo.
 
-## Ejecución aislada con Docker (base local)
+## Ejecución con PHP
 
-Requisitos: Docker Engine y Docker Compose. Desde la raíz del proyecto:
+Se necesita PHP 8.4 con PDO MySQL y una base de datos inicializada. Complete
+`.env` con un servidor accesible desde el equipo y una contraseña en `DB_PASS`.
+Para una base instalada en el mismo equipo, utilice `DB_HOST=127.0.0.1`.
+
+El aprovisionamiento inicial de cuentas se puede ejecutar desde la raíz:
 
 ```bash
-# Solo si todavía no existe .env:
-cp .env.example .env
-# Sustituir las claves de ejemplo por claves propias antes de iniciar.
-docker compose up -d --build --wait
+php docker/seed-demo.php
 ```
 
-La página se abre en **http://localhost:8088**. El archivo `.env.example` configura la base local de Docker. La copia de trabajo
-puede apuntar a un servidor externo mediante su `.env` privado; consérvalo para
-los siguientes inicios.
-Si necesitas otro puerto, cambia `APP_PORT` en `.env` y vuelve a ejecutar
-`docker compose up -d --wait`.
-
-El proyecto Compose se llama `podoana-auditoria`. Utiliza PHP/Apache, una instancia
-MariaDB propia, una red interna para la base de datos y volúmenes exclusivos para
-datos y archivos subidos. Solo la web publica un puerto, limitado a `127.0.0.1`.
-No utiliza el MySQL del equipo ni modifica los demás proyectos Docker.
-
-La primera ejecución importa `sql/schema.sql` **únicamente en el volumen nuevo**.
-El esquema incluye las tablas y los roles, sin usuarios, pacientes ni historiales
-precargados. Después, `demo-init` agrega cuatro cuentas para explorar los perfiles:
-
-| Perfil | DNI de acceso | Contraseña en `.env` |
-| :--- | :--- | :--- |
-| SuperAdmin | `90000001` | `DEMO_SUPERADMIN_PASSWORD` |
-| Administradora | `90000002` | `DEMO_ADMIN_PASSWORD` |
-| Especialista | `90000003` | `DEMO_ESPECIALISTA_PASSWORD` |
-| Recepcionista | `90000004` | `DEMO_RECEPCIONISTA_PASSWORD` |
-
-Estas cuentas de demostración están listas para ingresar, sin cambio inicial
-obligatorio. El inicializador conserva las cuentas existentes y sus contraseñas
-al reiniciar. Usa datos ficticios para las pruebas. Los estilos e iconos cargan
-desde CDN y requieren conexión a Internet en el navegador.
+Para iniciar el servidor de desarrollo:
 
 ```bash
-docker compose ps -a          # Estado de este proyecto
-docker compose logs web      # Registro de la aplicación
-docker compose stop          # Detenerlo conservando contenedores y datos
-docker compose up -d --wait   # Volver a iniciarlo
-docker compose down          # Quitar sus contenedores; conserva los volúmenes
+php -S 127.0.0.1:8000 -t public
 ```
 
-Evita `docker compose down -v` si quieres conservar los datos de prueba.
-El código se copia en la imagen: después de editar PHP, CSS o JavaScript,
-ejecuta `docker compose up -d --build --wait`.
+La aplicación estará disponible en **http://localhost:8000**. En Windows también
+se incluye `iniciar.bat`, que utiliza PHP de XAMPP cuando está disponible.
 
-Referencias: [PHP en Docker](https://docs.docker.com/guides/php/) y
-[comprobaciones de salud de MariaDB](https://mariadb.com/docs/server/server-management/automated-mariadb-deployment-and-administration/docker-and-mariadb/docker-official-image-frequently-asked-questions).
-
----
-
-## 1. Identidad Visual de Marca Integrada
-El sistema incorpora la línea gráfica oficial de la clínica:
-- **Logo Corporativo Oficial**: Silueta del pie con detalle botánico y firma de la Dra. Ana Ramírez en [`public/assets/img/logo.jpg`](file:///c:/Users/Usuario/Documents/PodoAna/public/assets/img/logo.jpg).
-- **Paleta de Colores Clínicos**:
-  - Azul Oscuro Médico: `#0A2540`
-  - Azul Clínico Dominante: `#005B94`
-  - Verde Menta / Salud: `#2EC4B6`
-  - Acentos Cian: `#00B4D8`
-  - Fondo Ergonómico: `#F8FAFC`
-
----
-
-## 2. Esquema de Roles y Permisos (RBAC de 3 Niveles)
-
-| Nivel | Rol / Perfil | Credenciales por Defecto | Permisos y Restricciones |
-| :--- | :--- | :--- | :--- |
-| **Nivel 1** | **SuperAdmin** *(Técnico / Creador)* | Credenciales entregadas de forma privada | **Acceso exclusivo al panel técnico, salud de BD y logs globales.** |
-| **Nivel 2** | **Dueña / Admin** | Credenciales entregadas de forma privada | **Control del negocio y gestión de empleados.** Edición de datos secundarios y borrado lógico, con auditoría. |
-| **Nivel 3** | **Especialista (Podólogo)** | Credenciales asignadas por administración | **Creación de pacientes, fichas y atenciones.** No puede modificar ni eliminar registros guardados. |
-| **Nivel 3** | **Recepcionista** | Credenciales asignadas por administración | **Registro de pacientes y agenda de turnos.** |
-
----
-
-## 3. Auditoría, Trazabilidad Forense y Borrado Lógico
-
-1. **Trazabilidad de Creación**: Cada paciente, cita o historia clínica guarda de forma automática e indeleble:
-   - `creado_por_usuario_id`
-   - `fecha_creacion`
-   - `hora_creacion`
-2. **Historial Inmutable de Modificaciones (`historial_cambios_pacientes`)**:
-   - Cuando el Administrador actualiza datos secundarios (teléfono, domicilio, calzado, antecedentes), el valor anterior **NO se sobrescribe a ciegas**.
-   - Se registra: `campo_modificado`, `valor_anterior`, `valor_nuevo`, `modificado_por_usuario_id`, `fecha_hora` y `motivo_cambio`.
-3. **Borrado Lógico (*Soft Delete*)**: Los registros nunca se destruyen con `DELETE FROM`. Se marcan con `estado = 'inactivo'`, `eliminado_en = NOW()` y `eliminado_por_usuario_id`.
-4. **Logs del Sistema (`logs_sistema`)**: Registra intentos de acceso no autorizados, bloqueos RBAC y operaciones del sistema visibles exclusivamente para el SuperAdmin.
-
----
-
-## 4. Estructura del Código
+## Estructura del proyecto
 
 ```text
-PodoAna/
-├── config/
-│   ├── app.php                    # Helpers de escape XSS con e(), sesiones y mensajes flash
-│   ├── auth.php                   # Control de acceso RBAC, autenticación y registro de logs
-│   └── database.php               # Conexión PDO Singleton desacoplada
-├── public/
-│   ├── assets/
-│   │   ├── css/custom.css         # Estilos complementarios
-│   │   ├── img/logo.jpg           # Logo oficial de la clínica
-│   │   └── js/app.js              # Prevención de doble envío táctil y lógica de alertas
-│   └── index.php                  # Front Controller y enrutador central
-├── sql/
-│   └── schema.sql                 # Script DDL completo (MySQL 8 / MariaDB) con auditoría y semillas
-├── src/
-│   ├── controllers/
-│   │   ├── AuthController.php     # Flujo de login seguro con password_verify() y logout
-│   │   └── PacienteController.php # CRUD con inyección de creador y bloqueos RBAC
-│   ├── models/
-│   │   └── Paciente.php           # Modelo con transacciones PDO y tabla historial_cambios
-│   └── views/
-│       ├── admin/
-│       │   └── sistema.php        # Panel técnico exclusivo para SuperAdmin (salud BD y logs)
-│       ├── auth/
-│       │   └── login.php          # Pantalla de inicio de sesión sin selector público de perfiles
-│       ├── layout/
-│       │   ├── header.php         # Navbar corporativa, badges de rol y cierre de sesión
-│       │   └── footer.php         # Pie de página y scripts
-│       └── pacientes/
-│           ├── detalle.php        # Ficha con tarjeta de trazabilidad e historial inmutable
-│           ├── editar.php         # Formulario de datos secundarios con bloqueo DNI/Nombres
-│           ├── listado.php        # Directorio con badges médicos y enlaces al expediente
-│           └── registro.php       # Formulario táctil con alertas dinámicas
-├── uploads/
-│   └── pacientes/
-├── iniciar.bat                    # Lanzador rápido de un clic para Windows
-└── README.md                      # Esta documentación
+config/             Configuración, conexión PDO, sesiones y permisos
+src/controllers/    Procesamiento de solicitudes
+src/models/         Consultas y operaciones de base de datos
+src/views/          Pantallas de acceso, pacientes, gestión y administración
+public/index.php    Punto de entrada y enrutamiento por acción
+public/assets/      Estilos, JavaScript e imágenes
+sql/                Esquema de la base de datos
+docker/             Configuración de Apache y scripts de instalación
+uploads/pacientes/  Directorio reservado para archivos de pacientes
+compose.yaml        Definición de servicios Docker
+Dockerfile          Imagen de PHP y Apache
 ```
 
----
+### Tablas principales
 
-## 5. Guía de Ejecución Local
+| Tabla | Información almacenada |
+| --- | --- |
+| `roles` | Perfiles y niveles de acceso. |
+| `usuarios` | Cuentas, datos del personal y estado de acceso. |
+| `pacientes` | Identificación, contacto y antecedentes de salud. |
+| `historias_clinicas` | Atenciones, procedimientos y valoraciones. |
+| `citas` | Reservas, horarios, profesionales y estados. |
+| `historial_cambios_pacientes` | Modificaciones de los datos del paciente. |
+| `auditoria_modulos` | Cambios en citas, atenciones y cuentas. |
+| `logs_sistema` | Eventos de acceso y operaciones del sistema. |
 
-### En Windows (con XAMPP):
-1. Asegúrate de tener **MySQL** activo en el XAMPP Control Panel.
-2. Haz doble clic en **`iniciar.bat`** (o ejecuta `C:\xampp\php\php.exe -S 0.0.0.0:8000 -t public`).
-3. Abre en tu navegador: **`http://localhost:8000`**
+## Operación y mantenimiento
 
-### En macOS (Terminal):
-1. Importar la base de datos:
-   ```bash
-   mysql -u root -p < sql/schema.sql
-   ```
-2. Obtener la IP local de tu Mac:
-   ```bash
-   ipconfig getifaddr en0
-   ```
-3. Arrancar el servidor integrado:
-   ```bash
-   php -S 0.0.0.0:8000 -t public
-   ```
-4. Acceder desde cualquier computadora o tablet iPad/Android en la misma red Wi-Fi:
-   ```text
-   http://TU_IP_LOCAL:8000
-   ```
+```bash
+docker compose ps -a        # Consultar el estado de los servicios
+docker compose logs web    # Consultar el registro de la aplicación
+docker compose stop        # Detener los servicios
+docker compose up -d --wait # Iniciar los servicios
+docker compose down        # Retirar los contenedores y conservar los volúmenes
+```
 
----
+Después de modificar el código, reconstruya la imagen con
+`docker compose up -d --build --wait`.
 
-## 6. Acceso y perfiles
+Los datos locales se conservan en volúmenes Docker. La opción `down -v` elimina
+esos volúmenes. Las copias de respaldo de un servidor MySQL externo se gestionan
+sobre ese servidor.
 
-El formulario de ingreso solicita DNI y contraseña, pero no muestra perfiles ni rellena credenciales de prueba. El DNI por sí solo no autentica: se valida también una contraseña almacenada como hash. Las cuentas de acceso deben aprovisionarse de forma privada y solo compartirse con su titular. La sección Personal y accesos permite crear, editar, cambiar el perfil y desactivar cuentas. Administración gestiona especialistas y recepción; SuperAdmin puede gestionar todos los perfiles. Las contraseñas nuevas requieren cambio al iniciar sesión y las cuentas desactivadas pierden el acceso también en sesiones abiertas.
+Para comprobar la sintaxis de los archivos PHP:
 
-
-## Módulos disponibles
-
-- Pacientes: registro de todos los antecedentes, búsqueda, detalle, correcciones
-  con auditoría, borrado lógico e impresión.
-- Agenda: reserva y edición de turnos, control de solapamientos por profesional,
-  estados pendiente/en atención/finalizado/cancelado y fecha de consulta.
-- Atenciones: diagnóstico, procedimiento, evolución, recomendaciones, próxima
-  visita y valoración de dolor, pisada, marcha, piel/uñas, vascular y neurológica.
-  Los especialistas crean registros; administración corrige o retira con motivo.
-- Personal: cuentas, perfiles y desactivaciones. Se conservan usuarios y
-  atenciones retiradas; no se eliminan físicamente.
-- Auditoría: cambios de pacientes en `historial_cambios_pacientes`, cambios de
-  citas/atenciones/usuarios en `auditoria_modulos` y eventos en `logs_sistema`.
-
-Los datos cargados por `docker/datos-ficticios.php` son completamente sintéticos.
-Los nombres y antecedentes no describen personas reales, los correos utilizan
-`example.test` y no se envían mensajes. Para la ejecución nativa, configure
-`DB_HOST` con el servidor accesible desde el equipo (por ejemplo `127.0.0.1`)
-y `DB_PASS` con su contraseña antes de ejecutar `php -S`.
-
-Las decisiones y limitaciones de la implementación para práctica se documentan
-en [PRACTICA.md](PRACTICA.md).
+```bash
+rg --files -g '*.php' -0 | xargs -0 -n 1 php -l
+```

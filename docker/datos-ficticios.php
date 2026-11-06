@@ -60,7 +60,7 @@ try {
             $fecha = (new DateTimeImmutable('today'))->modify('-' . (50 - $i + $j * 10) . ' days')->setTime(9 + $i % 8, 0);
             $historia->execute([$id, $ids['especialista'], $ids['especialista'], $fecha->format('Y-m-d'), $fecha->format('H:i:s'), $fecha->format('Y-m-d H:i:s'), 'Molestia en apoyo y revisión podológica', $diagnosticos[($i + $j) % 6], $procedimientos[($i + $j) % 6], $j ? 'Mejoría progresiva, sin signos de alarma' : 'Primera evaluación y registro de lesión', 'Higiene diaria, calzado amplio y control programado', 'Seguimiento de tolerancia al procedimiento', $fecha->modify('+30 days')->format('Y-m-d'), 2 + $i % 6, ['Neutra', 'Pronadora', 'Supinadora'][$i % 3], 'Apoyo conservado con leve sobrecarga del antepié', 'Pulsos pedios palpables; relleno capilar conservado', 'Sensibilidad superficial conservada', 'Piel seca y engrosamiento ungueal localizado']);
             $historiaId = (int) $db->lastInsertId();
-            $modulo->execute(['historias_clinicas', $historiaId, 'creacion', null, 'Atención registrada', $ids['especialista'], 'Carga de datos ficticios de práctica']);
+            $modulo->execute(['historias_clinicas', $historiaId, 'creacion', null, 'Atención registrada', $ids['especialista'], 'Carga de datos ficticios']);
         }
         for ($j = 0; $j < 2; $j++) {
             $dia = (new DateTimeImmutable('today'))->modify(($j ? '-' : '+') . intdiv($i, 12) . ' days');
@@ -72,7 +72,7 @@ try {
             $audit->execute([$id, 'telefono', (string) (951100000 + $i), $d['telefono'], $ids['admin'], 'Paciente comunica cambio de número de contacto']);
         }
     }
-    $s = $db->prepare("INSERT INTO logs_sistema (usuario_id, nivel, modulo, accion, descripcion, ip_origen, user_agent) VALUES (?, 'INFO', 'DEMO', 'CARGA_FICTICIA_V1', 'Carga de 36 pacientes, 72 atenciones y 72 citas sintéticas para práctica', '127.0.0.1', 'Inicializador CLI')");
+    $s = $db->prepare("INSERT INTO logs_sistema (usuario_id, nivel, modulo, accion, descripcion, ip_origen, user_agent) VALUES (?, 'INFO', 'DEMO', 'CARGA_FICTICIA_V1', 'Carga de 36 pacientes, 72 atenciones y 72 citas sintéticas', '127.0.0.1', 'Inicializador CLI')");
     $s->execute([$ids['superadmin']]);
     $db->commit();
     echo "Creados 36 pacientes, 72 atenciones, 72 citas y sus registros de auditoría. Todos son ficticios.\n";
