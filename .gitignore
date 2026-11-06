@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+/output/
+/.playwright-cli/
+/uploads/pacientes/*
+!/uploads/pacientes/.gitkeep

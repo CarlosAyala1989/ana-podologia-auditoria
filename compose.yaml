@@ -1,0 +1,97 @@
+name: podoana-auditoria
+
+x-application: &application
+  image: podoana-auditoria-web:local
+  build: .
+
+x-database-connection: &database-connection
+  DB_HOST: db
+  DB_PORT: "3306"
+  DB_NAME: podoana_db
+  DB_USER: podoana
+  DB_PASS: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+  DB_CHARSET: utf8mb4
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "5m"
+    max-file: "2"
+
+services:
+  db:
+    image: mariadb:11.8.9
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: podoana_db
+      MARIADB_USER: podoana
+      MARIADB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Define DB_ROOT_PASSWORD en .env}
+    volumes:
+      - database:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - database
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    mem_limit: 512m
+    cpus: 1
+    logging: *logging
+
+  demo-init:
+    <<: *application
+    command: ["php", "docker/seed-demo.php"]
+    restart: "no"
+    environment:
+      <<: *database-connection
+      DEMO_SUPERADMIN_PASSWORD: ${DEMO_SUPERADMIN_PASSWORD:?Define DEMO_SUPERADMIN_PASSWORD en .env}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Define DEMO_ADMIN_PASSWORD en .env}
+      DEMO_ESPECIALISTA_PASSWORD: ${DEMO_ESPECIALISTA_PASSWORD:?Define DEMO_ESPECIALISTA_PASSWORD en .env}
+      DEMO_RECEPCIONISTA_PASSWORD: ${DEMO_RECEPCIONISTA_PASSWORD:?Define DEMO_RECEPCIONISTA_PASSWORD en .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - database
+    mem_limit: 128m
+    cpus: 0.5
+    logging: *logging
+
+  web:
+    <<: *application
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-8088}:80"
+    environment: *database-connection
+    depends_on:
+      db:
+        condition: service_healthy
+      demo-init:
+        condition: service_completed_successfully
+    volumes:
+      - uploads:/var/www/html/uploads
+    networks:
+      - web
+      - database
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/index.php?accion=login') === false ? 1 : 0);"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    mem_limit: 256m
+    cpus: 1
+    logging: *logging
+
+networks:
+  web:
+  database:
+    internal: true
+
+volumes:
+  database:
+  uploads:

@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+output
+.playwright-cli
+uploads
+README.md
+AGENTS.md
+iniciar.bat
