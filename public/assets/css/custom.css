@@ -1,5 +1,17 @@
 /* Estilos personalizados complementarios para Podología Ana Ramírez */
 
+.etiqueta { display: block; font-size: 0.875rem; font-weight: 700; margin-bottom: 0.375rem; color: #334155; }
+.campo { display: block; width: 100%; min-height: 48px; padding: 0.625rem 0.75rem; border: 1px solid #94a3b8; border-radius: 0.75rem; background: #fff; color: #1e293b; }
+.campo::placeholder { color: #64748b; }
+.boton, .boton-secundario { display: inline-flex; min-height: 48px; padding: 0.625rem 1rem; align-items: center; justify-content: center; border-radius: 0.75rem; font-weight: 700; cursor: pointer; }
+.boton { color: #fff; background: #005b94; }
+.boton:hover { background: #0a2540; }
+.boton-secundario { color: #334155; border: 1px solid #94a3b8; background: #fff; }
+.boton-secundario:hover { background: #f1f5f9; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid #005b94; outline-offset: 3px; }
+::selection { background: #b2eee8; color: #0a2540; }
+input, textarea { caret-color: #005b94; }
+
 /* Efecto suave de aparición para alertas */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-6px); }

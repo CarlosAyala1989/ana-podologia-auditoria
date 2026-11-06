@@ -146,6 +146,7 @@ class PacienteController
         }
 
         $historialCambios = $this->pacienteModel->obtenerHistorialCambios($id);
+        $historiasClinicas = $this->pacienteModel->obtenerHistoriasClinicas($id);
         $mensajeExito = flash('exito');
         $mensajeError = flash('error');
 

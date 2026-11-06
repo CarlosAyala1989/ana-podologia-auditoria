@@ -10,10 +10,10 @@ require_once dirname(__DIR__) . '/config/database.php';
 
 // Este inicializador se ejecuta únicamente en el contenedor demo-init.
 $cuentas = [
-    ['90000001', 'superadmin', 'Técnico', 'DEMO_SUPERADMIN_PASSWORD'],
-    ['90000002', 'admin', 'Administración', 'DEMO_ADMIN_PASSWORD'],
-    ['90000003', 'especialista', 'Especialista', 'DEMO_ESPECIALISTA_PASSWORD'],
-    ['90000004', 'recepcionista', 'Recepción', 'DEMO_RECEPCIONISTA_PASSWORD'],
+    ['90000001', 'superadmin', 'Alberto', 'Peña', 'DEMO_SUPERADMIN_PASSWORD'],
+    ['90000002', 'admin', 'Ana', 'Ramírez', 'DEMO_ADMIN_PASSWORD'],
+    ['90000003', 'especialista', 'Valeria', 'Quiroz', 'DEMO_ESPECIALISTA_PASSWORD'],
+    ['90000004', 'recepcionista', 'Marisol', 'Torres', 'DEMO_RECEPCIONISTA_PASSWORD'],
 ];
 
 $db = Database::pdo();
@@ -28,7 +28,7 @@ try {
          VALUES (:rol, :dni, :nombre, :apellido, :email, :hash, 0, :estado)'
     );
 
-    foreach ($cuentas as [$dni, $rol, $apellido, $variable]) {
+    foreach ($cuentas as [$dni, $rol, $nombre, $apellido, $variable]) {
         $buscar->execute([':dni' => $dni]);
         if ($buscar->fetchColumn() !== false) {
             echo "Cuenta demo {$rol} existente; se conserva su contraseña.\n";
@@ -49,7 +49,7 @@ try {
         $insertar->execute([
             ':rol' => (int) $rolId,
             ':dni' => $dni,
-            ':nombre' => 'Demo',
+            ':nombre' => $nombre,
             ':apellido' => $apellido,
             ':email' => "{$rol}@demo.example.test",
             ':hash' => password_hash($password, PASSWORD_BCRYPT),

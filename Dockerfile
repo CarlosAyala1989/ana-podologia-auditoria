@@ -9,7 +9,8 @@ COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 COPY config/ config/
 COPY src/ src/
 COPY public/ public/
-COPY docker/seed-demo.php docker/seed-demo.php
+COPY docker/ docker/
+COPY sql/ sql/
 
 RUN mkdir -p uploads/pacientes \
     && chown -R www-data:www-data uploads

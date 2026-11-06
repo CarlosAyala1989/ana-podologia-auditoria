@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/env.php';
+
 /**
  * Gestor de Conexión a Base de Datos - Patrón Singleton
  * Sistema: Podología Ana Ramírez

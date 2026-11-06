@@ -190,6 +190,28 @@ require_once dirname(__DIR__) . '/layout/header.php';
     <!-- COLUMNA DERECHA: AUDITORÍA INMUTABLE DE CAMBIOS -->
     <div class="lg:col-span-2 space-y-6">
 
+        <section id="atenciones" class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 scroll-mt-48">
+            <div class="flex flex-wrap justify-between gap-3 mb-4"><h2 class="text-lg font-bold">Atenciones y evolución clínica</h2>
+                <div class="flex flex-wrap gap-3">
+                    <?php if ($paciente['estado'] === 'activo' && tieneRol(['admin', 'superadmin', 'especialista'])): ?><a class="text-[#005B94] font-bold underline" href="index.php?accion=atencion&paciente_id=<?= (int) $paciente['id'] ?>">Registrar atención</a><?php endif; ?>
+                    <?php if ($paciente['estado'] === 'activo' && tieneRol(['admin', 'superadmin', 'recepcionista'])): ?><a class="text-[#005B94] font-bold underline" href="index.php?accion=agenda&paciente_id=<?= (int) $paciente['id'] ?>">Reservar cita</a><?php endif; ?>
+                </div>
+            </div>
+            <?php if (!$historiasClinicas): ?><p class="text-sm text-slate-600 py-4">Este expediente todavía no tiene atenciones registradas.</p><?php endif; ?>
+            <?php foreach ($historiasClinicas as $hc): ?>
+                <article class="border-t border-slate-200 py-5 space-y-3">
+                    <div class="flex flex-wrap justify-between gap-2"><h3 class="font-bold"><?= e(date('d/m/Y H:i', strtotime($hc['fecha_atencion']))) ?> · <?= e($hc['especialista_nombre']) ?></h3><?php if (puedeEditarPaciente()): ?><a class="text-[#005B94] underline text-sm" href="index.php?accion=atencion&id=<?= (int) $hc['id'] ?>">Corregir atención</a><?php endif; ?></div>
+                    <dl class="text-sm grid sm:grid-cols-2 gap-4">
+                        <?php foreach (['motivo_consulta' => 'Motivo', 'diagnostico' => 'Diagnóstico', 'procedimiento_realizado' => 'Procedimiento', 'evolucion_lesion' => 'Evolución', 'prescripcion_recomendaciones' => 'Recomendaciones', 'tipo_pisada' => 'Tipo de pisada', 'evaluacion_marcha' => 'Marcha y apoyo', 'piel_unas' => 'Piel y uñas', 'exploracion_vascular' => 'Valoración vascular', 'exploracion_neurologica' => 'Valoración neurológica', 'proxima_visita_sugerida' => 'Próxima revisión'] as $campo => $nombre): ?>
+                            <?php if (!empty($hc[$campo])): ?><div><dt class="font-bold text-slate-600"><?= e($nombre) ?></dt><dd class="mt-1 whitespace-pre-wrap break-words"><?= e($hc[$campo]) ?></dd></div><?php endif; ?>
+                        <?php endforeach; ?>
+                        <div><dt class="font-bold text-slate-600">Escala de dolor</dt><dd><?= (int) ($hc['dolor_escala'] ?? 0) ?>/10</dd></div>
+                        <?php if (tieneRol(['superadmin', 'admin', 'especialista']) && !empty($hc['observaciones_privadas'])): ?><div><dt class="font-bold text-slate-600">Notas internas</dt><dd class="whitespace-pre-wrap break-words"><?= e($hc['observaciones_privadas']) ?></dd></div><?php endif; ?>
+                    </dl>
+                </article>
+            <?php endforeach; ?>
+        </section>
+
         <!-- TABLA DE HISTORIAL DE CAMBIOS AUDITADOS -->
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
             <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">

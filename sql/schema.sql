@@ -147,6 +147,12 @@ CREATE TABLE `historias_clinicas` (
   `prescripcion_recomendaciones` TEXT NULL,
   `observaciones_privadas` TEXT NULL,
   `proxima_visita_sugerida` DATE NULL,
+  `dolor_escala` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `tipo_pisada` VARCHAR(50) NULL,
+  `evaluacion_marcha` TEXT NULL,
+  `exploracion_vascular` TEXT NULL,
+  `exploracion_neurologica` TEXT NULL,
+  `piel_unas` TEXT NULL,
   `estado` ENUM('activo', 'inactivo') NOT NULL DEFAULT 'activo',
   `eliminado_en` DATETIME NULL,
   `eliminado_por_usuario_id` INT UNSIGNED NULL,
@@ -214,6 +220,22 @@ CREATE TABLE `logs_sistema` (
     FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE,
   INDEX `idx_logs_nivel_fecha` (`nivel`, `fecha_hora` DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Auditoría de citas, atenciones y cuentas del personal.
+DROP TABLE IF EXISTS `auditoria_modulos`;
+CREATE TABLE `auditoria_modulos` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `entidad` VARCHAR(40) NOT NULL,
+  `registro_id` INT UNSIGNED NOT NULL,
+  `campo` VARCHAR(80) NOT NULL,
+  `valor_anterior` TEXT NULL,
+  `valor_nuevo` TEXT NULL,
+  `usuario_id` INT UNSIGNED NOT NULL,
+  `motivo` VARCHAR(255) NOT NULL,
+  `fecha_hora` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_auditoria_modulos_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`),
+  INDEX `idx_auditoria_entidad` (`entidad`, `registro_id`, `fecha_hora`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

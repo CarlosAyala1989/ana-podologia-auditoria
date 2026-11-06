@@ -55,7 +55,7 @@ class AuthController
 
             // Si es su primer ingreso con DNI como contraseña, exigir el cambio de inmediato
             if (!empty($usuario['debe_cambiar_password'])) {
-                flash('exito', "Bienvenido(a), <strong>{$usuario['nombre_completo']}</strong>. Por seguridad de la clínica, debe actualizar su contraseña inicial (su DNI).");
+                flash('exito', "Bienvenido(a), <strong>{$usuario['nombre_completo']}</strong>. Por seguridad de la clínica, debe actualizar su contraseña inicial.");
                 header('Location: index.php?accion=cambiar_password');
                 exit;
             }
@@ -69,7 +69,7 @@ class AuthController
             }
             exit;
         } else {
-            flash('error', 'DNI o contraseña incorrectos. Recuerde que su contraseña inicial es su mismo número de DNI.');
+            flash('error', 'DNI o contraseña incorrectos. Utilice la clave asignada por administración.');
             header('Location: index.php?accion=login');
             exit;
         }

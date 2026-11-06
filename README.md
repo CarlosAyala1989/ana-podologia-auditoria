@@ -4,7 +4,35 @@ Sistema de Gestión Clínica - Podología Ana Ramírez (v2.0).
 
 Sistema integral para gestión de expedientes clínicos podológicos, antecedentes de salud, valoración biomecánica, citas, control de acceso por roles (RBAC estricto) y auditoría inmutable de cambios.
 
-## Ejecución aislada con Docker
+## Conexión a MySQL externo
+
+La copia de trabajo está configurada mediante el archivo privado `.env`. Docker
+inyecta `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` y `DB_CHARSET` en PHP.
+La ejecución nativa con `php -S` también lee ese archivo. Las credenciales no se
+incluyen en Git ni en las imágenes Docker.
+
+Para preparar **otra base vacía**, complete esas variables y las cuatro claves
+`DEMO_*_PASSWORD` (mínimo 12 caracteres) en `.env`, y ejecute:
+
+```bash
+docker compose build web
+docker compose run --rm --no-deps demo-init php docker/inicializar.php
+docker compose up -d --wait
+```
+
+El instalador crea ocho tablas, cuatro cuentas y datos sintéticos: 36 pacientes,
+72 atenciones y 72 citas, con auditorías. Rechaza bases que ya contienen tablas.
+La carga ficticia no se repite si ya existe su marca de inicialización.
+`sql/instalar.sql` utiliza la base seleccionada y no contiene instrucciones DROP;
+`sql/schema.sql` se reserva para recrear bases locales desechables.
+
+La web sigue disponible en **http://localhost:8088**. `docker compose up` conserva
+el servicio MariaDB local como dependencia, aunque PHP utiliza el servidor
+indicado por `DB_HOST`; cambiar entre servidores requiere recrear el contenedor
+web. Las tablas y los datos del servidor remoto son independientes del volumen
+MariaDB local.
+
+## Ejecución aislada con Docker (base local)
 
 Requisitos: Docker Engine y Docker Compose. Desde la raíz del proyecto:
 
@@ -15,8 +43,9 @@ cp .env.example .env
 docker compose up -d --build --wait
 ```
 
-La página se abre en **http://localhost:8088**. En este equipo ya se generó
-un `.env` privado con claves aleatorias; consérvalo para los siguientes inicios.
+La página se abre en **http://localhost:8088**. El archivo `.env.example` configura la base local de Docker. La copia de trabajo
+puede apuntar a un servidor externo mediante su `.env` privado; consérvalo para
+los siguientes inicios.
 Si necesitas otro puerto, cambia `APP_PORT` en `.env` y vuelve a ejecutar
 `docker compose up -d --wait`.
 
@@ -167,4 +196,28 @@ PodoAna/
 
 ## 6. Acceso y perfiles
 
-El formulario de ingreso solicita DNI y contraseña, pero no muestra perfiles ni rellena credenciales de prueba. El DNI por sí solo no autentica: se valida también una contraseña almacenada como hash. Las cuentas de acceso deben aprovisionarse de forma privada y solo compartirse con su titular. La administración de usuarios dentro de la aplicación aún no está implementada.
+El formulario de ingreso solicita DNI y contraseña, pero no muestra perfiles ni rellena credenciales de prueba. El DNI por sí solo no autentica: se valida también una contraseña almacenada como hash. Las cuentas de acceso deben aprovisionarse de forma privada y solo compartirse con su titular. La sección Personal y accesos permite crear, editar, cambiar el perfil y desactivar cuentas. Administración gestiona especialistas y recepción; SuperAdmin puede gestionar todos los perfiles. Las contraseñas nuevas requieren cambio al iniciar sesión y las cuentas desactivadas pierden el acceso también en sesiones abiertas.
+
+
+## Módulos disponibles
+
+- Pacientes: registro de todos los antecedentes, búsqueda, detalle, correcciones
+  con auditoría, borrado lógico e impresión.
+- Agenda: reserva y edición de turnos, control de solapamientos por profesional,
+  estados pendiente/en atención/finalizado/cancelado y fecha de consulta.
+- Atenciones: diagnóstico, procedimiento, evolución, recomendaciones, próxima
+  visita y valoración de dolor, pisada, marcha, piel/uñas, vascular y neurológica.
+  Los especialistas crean registros; administración corrige o retira con motivo.
+- Personal: cuentas, perfiles y desactivaciones. Se conservan usuarios y
+  atenciones retiradas; no se eliminan físicamente.
+- Auditoría: cambios de pacientes en `historial_cambios_pacientes`, cambios de
+  citas/atenciones/usuarios en `auditoria_modulos` y eventos en `logs_sistema`.
+
+Los datos cargados por `docker/datos-ficticios.php` son completamente sintéticos.
+Los nombres y antecedentes no describen personas reales, los correos utilizan
+`example.test` y no se envían mensajes. Para la ejecución nativa, configure
+`DB_HOST` con el servidor accesible desde el equipo (por ejemplo `127.0.0.1`)
+y `DB_PASS` con su contraseña antes de ejecutar `php -S`.
+
+Las decisiones y limitaciones de la implementación para práctica se documentan
+en [PRACTICA.md](PRACTICA.md).

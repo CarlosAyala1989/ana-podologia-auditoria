@@ -51,7 +51,7 @@
                     <div>
                         <strong class="font-bold">Hola, <?= e($usuario['nombre_completo']) ?></strong> (DNI: <span class="font-mono"><?= e($usuario['dni']) ?></span>)
                         <p class="mt-1 text-amber-800">
-                            Por política de privacidad médica, debe sustituir su contraseña inicial (su número de DNI) por una contraseña personal y segura.
+                            Por política de privacidad médica, debe sustituir su contraseña inicial por una contraseña personal y segura.
                         </p>
                     </div>
                 </div>

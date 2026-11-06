@@ -6,7 +6,7 @@ $usuarioActivo = usuarioActual();
 <html lang="es" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($tituloPagina) ? e($tituloPagina) . ' - ' : '' ?>Podología Ana Ramírez</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -139,6 +139,13 @@ $usuarioActivo = usuarioActual();
                 </a>
             <?php endif; ?>
         </div>
+        <?php if ($usuarioActivo): ?>
+        <nav aria-label="Módulos de gestión" class="flex flex-wrap gap-2 px-4 sm:px-6 lg:px-8 py-2 border-t border-white/10 max-w-7xl mx-auto text-sm font-bold text-white">
+            <a class="px-3 py-2 rounded-lg hover:bg-white/10 <?= ($_GET['accion'] ?? '') === 'agenda' ? 'bg-[#005B94]' : '' ?>" href="index.php?accion=agenda"><i aria-hidden="true" class="fa-regular fa-calendar mr-2 text-[#2EC4B6]"></i>Agenda</a>
+            <?php if (tieneRol(['admin', 'superadmin', 'especialista'])): ?><a class="px-3 py-2 rounded-lg hover:bg-white/10 <?= ($_GET['accion'] ?? '') === 'atencion' ? 'bg-[#005B94]' : '' ?>" href="index.php?accion=atencion"><i aria-hidden="true" class="fa-solid fa-notes-medical mr-2 text-[#2EC4B6]"></i>Registrar atención</a><?php endif; ?>
+            <?php if (tieneRol(['admin', 'superadmin'])): ?><a class="px-3 py-2 rounded-lg hover:bg-white/10 <?= ($_GET['accion'] ?? '') === 'usuarios' ? 'bg-[#005B94]' : '' ?>" href="index.php?accion=usuarios"><i aria-hidden="true" class="fa-solid fa-user-gear mr-2 text-[#2EC4B6]"></i>Personal y accesos</a><?php endif; ?>
+        </nav>
+        <?php endif; ?>
     </header>
 
     <!-- CONTENEDOR PRINCIPAL -->

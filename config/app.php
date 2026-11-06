@@ -55,6 +55,23 @@ function e(?string $cadena): string
     return htmlspecialchars($cadena, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function tokenFormulario(): string
+{
+    iniciarSesionSegura();
+    if (empty($_SESSION['token_formulario'])) {
+        $_SESSION['token_formulario'] = bin2hex(random_bytes(24));
+    }
+    return $_SESSION['token_formulario'];
+}
+
+function validarTokenFormulario(): void
+{
+    if (!is_string($_POST['token'] ?? null) || !hash_equals(tokenFormulario(), $_POST['token'])) {
+        http_response_code(403);
+        exit('El formulario venció. Regrese, recargue la página y vuelva a intentarlo.');
+    }
+}
+
 /**
  * Establece o lee mensajes flash de sesión (alerta de éxito, advertencia o error)
  */

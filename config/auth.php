@@ -39,11 +39,30 @@ function requerirAutenticacion(): void
         exit;
     }
 
+    // La gestión de personal puede cambiar el perfil o desactivar una cuenta ya conectada.
+    $s = Database::pdo()->prepare('SELECT u.estado, u.rol_id, u.nombre, u.apellido, u.email, u.especialidad, u.debe_cambiar_password, r.slug, r.nombre AS rol_nombre, r.nivel_jerarquia FROM usuarios u JOIN roles r ON r.id = u.rol_id WHERE u.id = ?');
+    $s->execute([(int) $_SESSION['usuario']['id']]);
+    $actual = $s->fetch();
+    if (!$actual || $actual['estado'] !== 'activo') {
+        unset($_SESSION['usuario']);
+        flash('error', 'Su acceso ya no está activo. Consulte con administración.');
+        header('Location: index.php?accion=login');
+        exit;
+    }
+    $_SESSION['usuario'] = array_merge($_SESSION['usuario'], [
+        'rol_id' => (int) $actual['rol_id'], 'rol_slug' => $actual['slug'],
+        'rol_nombre' => $actual['rol_nombre'], 'nivel_jerarquia' => (int) $actual['nivel_jerarquia'],
+        'nombre' => $actual['nombre'], 'apellido' => $actual['apellido'],
+        'nombre_completo' => $actual['nombre'] . ' ' . $actual['apellido'],
+        'email' => $actual['email'], 'especialidad' => $actual['especialidad'],
+        'debe_cambiar_password' => (int) $actual['debe_cambiar_password'],
+    ]);
+
     // Interceptación de seguridad: Si debe cambiar la contraseña inicial, bloquear navegación hasta que la cambie
     if (!empty($_SESSION['usuario']['debe_cambiar_password'])) {
         $accionActual = $_GET['accion'] ?? '';
         if (!in_array($accionActual, ['cambiar_password', 'guardar_password', 'logout'], true)) {
-            flash('error', 'Por seguridad, debe actualizar su contraseña inicial (su DNI) antes de continuar.');
+            flash('error', 'Por seguridad, debe actualizar su contraseña inicial antes de continuar.');
             header('Location: index.php?accion=cambiar_password');
             exit;
         }

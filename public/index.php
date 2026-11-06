@@ -11,6 +11,7 @@ require_once dirname(__DIR__) . '/config/database.php';
 require_once dirname(__DIR__) . '/config/auth.php';
 require_once dirname(__DIR__) . '/src/controllers/AuthController.php';
 require_once dirname(__DIR__) . '/src/controllers/PacienteController.php';
+require_once dirname(__DIR__) . '/src/controllers/GestionController.php';
 
 $accion = $_GET['accion'] ?? '';
 
@@ -29,6 +30,17 @@ $authControlador = new AuthController();
 $pacienteControlador = new PacienteController();
 
 switch ($accion) {
+    case 'agenda':
+        (new GestionController())->agenda();
+        break;
+
+    case 'atencion':
+        (new GestionController())->atencion();
+        break;
+
+    case 'usuarios':
+        (new GestionController())->usuarios();
+        break;
     // 1. Módulo de Autenticación
     case 'login':
         $authControlador->mostrarLogin();

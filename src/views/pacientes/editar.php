@@ -128,6 +128,20 @@ require_once dirname(__DIR__) . '/layout/header.php';
         </div>
     </div>
 
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+        <h2 class="text-lg font-bold">Antecedentes y datos complementarios</h2>
+        <div class="flex flex-wrap gap-5">
+            <?php foreach (['tiene_marcapasos' => 'Tiene marcapasos', 'enfermedades_renales' => 'Enfermedades renales'] as $campo => $nombre): ?>
+                <label class="flex items-center gap-2"><input type="checkbox" name="<?= $campo ?>" value="1" <?= !empty($paciente[$campo]) ? 'checked' : '' ?>><?= e($nombre) ?></label>
+            <?php endforeach; ?>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+            <?php foreach (['ocupacion' => 'Ocupación', 'tipo_diabetes' => 'Tipo de diabetes y control', 'otras_patologias' => 'Otras patologías', 'alergias_medicamentos' => 'Alergias a medicamentos', 'alergias_contacto' => 'Alergias de contacto', 'actividad_fisica' => 'Actividad física'] as $campo => $nombre): ?>
+                <div><label for="<?= $campo ?>" class="etiqueta"><?= e($nombre) ?></label><textarea id="<?= $campo ?>" name="<?= $campo ?>" class="campo" rows="2"><?= e($paciente[$campo] ?? '') ?></textarea></div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
     <!-- BLOQUE 4: JUSTIFICACIÓN OBLIGATORIA DEL CAMBIO (AUDITORÍA) -->
     <div class="bg-amber-50/60 rounded-2xl border border-amber-200 p-6 space-y-2">
         <label for="motivo_cambio" class="block text-xs font-bold uppercase tracking-wider text-amber-950">
